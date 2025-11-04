@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Box,
     Typography,
@@ -9,8 +9,11 @@ import {
     TableHead,
     TableRow,
     Button,
-    Divider,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
     LineChart,
     Line,
@@ -30,7 +33,8 @@ interface SummaryProps {
 }
 
 const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
-    // Prepare chart data
+    const [expandedYear, setExpandedYear] = useState<number | false>(false);
+
     const chartData = academicYears.flatMap((year) =>
         year.semesters.map((sem) => ({
             semester: `${year.name} - ${sem.name}`,
@@ -39,7 +43,6 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
         }))
     );
 
-    // Determine class based on CGPA
     const getClass = (cgpa: number | null) => {
         if (cgpa === null) return "N/A";
         if (cgpa >= 4.5) return "First Class";
@@ -49,7 +52,13 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
         return "Fail";
     };
 
-    // Export PDF
+    const handleAccordionChange = (yearIndex: number) => (
+        _: React.SyntheticEvent,
+        isExpanded: boolean
+    ) => {
+        setExpandedYear(isExpanded ? yearIndex : false);
+    };
+
     const exportPDF = () => {
         const doc = new jsPDF();
         let startY = 20;
@@ -83,7 +92,6 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
         doc.save("Academic_Summary.pdf");
     };
 
-    // Custom dot for GPA trend chart
     const renderDot = (props: any) => {
         const { cx, cy, payload } = props;
         if (cx === undefined || cy === undefined || !payload) {
@@ -102,78 +110,80 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
     };
 
     return (
-        <Box sx={{ p: 4, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-            <Typography variant="h4" align="center" gutterBottom color="primary">
+        <Box sx={{ p: { xs: 2, sm: 4 }, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+            <Typography
+                variant="h4"
+                align="center"
+                gutterBottom
+                sx={{ fontSize: { xs: "1.6rem", sm: "2rem" } }}
+                color="primary"
+            >
                 Academic Summary
             </Typography>
 
-            <Divider sx={{ mb: 3 }} />
-
-            {/* Semester Tables */}
             {academicYears.map((year, yearIndex) => (
-                <Paper
+                <Accordion
                     key={yearIndex}
-                    sx={{
-                        p: 3,
-                        mb: 4,
-                        borderRadius: 3,
-                        boxShadow: 3,
-                        backgroundColor: "#ffffff",
-                    }}
+                    expanded={expandedYear === yearIndex}
+                    onChange={handleAccordionChange(yearIndex)}
+                    sx={{ mb: 2, borderRadius: 2, boxShadow: 2 }}
                 >
-                    <Typography variant="h5" color="secondary" gutterBottom>
-                        {year.name}
-                    </Typography>
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        sx={{ backgroundColor: "#228B22", color: "white" }}
+                    >
+                        <Typography variant="h6">{year.name}</Typography>
+                    </AccordionSummary>
 
-                    <Table sx={{ mt: 2 }}>
-                        <TableHead sx={{ backgroundColor: "#228B22" }}>
-                            <TableRow>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                                    Semester
-                                </TableCell>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                                    Courses
-                                </TableCell>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                                    Grades
-                                </TableCell>
-                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
-                                    GPA
-                                </TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {year.semesters.map((sem, i) => (
-                                <TableRow
-                                    key={i}
-                                    sx={{
-                                        "&:hover": { backgroundColor: "#e0f2f1" },
-                                        color: (sem.gpa ?? 0) < 2 ? "red" : "inherit",
-                                    }}
-                                >
-                                    <TableCell>{sem.name}</TableCell>
-                                    <TableCell>
-                                        {sem.courses.map((c) => c.code).join(", ")}
-                                    </TableCell>
-                                    <TableCell>
-                                        {sem.courses.map((c) => c.grade).join(", ")}
-                                    </TableCell>
-                                    <TableCell
-                                        sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}
-                                    >
-                                        {sem.gpa ?? "N/A"}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </Paper>
+                    <AccordionDetails>
+                        {year.semesters.map((sem, semIndex) => (
+                            <Paper
+                                key={semIndex}
+                                sx={{
+                                    p: { xs: 1, sm: 2 },
+                                    mb: 2,
+                                    borderRadius: 2,
+                                    boxShadow: 1,
+                                    overflowX: "auto",
+                                }}
+                            >
+                                <Typography variant="subtitle1" color="secondary" gutterBottom>
+                                    {sem.name}
+                                </Typography>
+                                <Table sx={{ minWidth: 400 }}>
+                                    <TableHead sx={{ backgroundColor: "#228B22" }}>
+                                        <TableRow>
+                                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Course</TableCell>
+                                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Grade</TableCell>
+                                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>GPA</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {sem.courses.map((course, i) => (
+                                            <TableRow
+                                                key={i}
+                                                sx={{
+                                                    "&:hover": { backgroundColor: "#e0f2f1" },
+                                                }}
+                                            >
+                                                <TableCell>{course.code}</TableCell>
+                                                <TableCell>{course.grade}</TableCell>
+                                                <TableCell sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}>
+                                                    {sem.gpa ?? "N/A"}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Paper>
+                        ))}
+                    </AccordionDetails>
+                </Accordion>
             ))}
 
-            {/* Overall CGPA and Class */}
             <Paper
                 sx={{
-                    p: 3,
+                    p: { xs: 2, sm: 3 },
                     mb: 4,
                     borderRadius: 3,
                     backgroundColor: "#e8f5e9",
@@ -188,8 +198,15 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
                 </Typography>
             </Paper>
 
-            {/* GPA Trend Chart */}
-            <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, backgroundColor: "#ffffff" }}>
+            <Paper
+                sx={{
+                    p: { xs: 2, sm: 3 },
+                    borderRadius: 3,
+                    boxShadow: 3,
+                    backgroundColor: "#ffffff",
+                    overflowX: "auto",
+                }}
+            >
                 <Typography variant="h6" gutterBottom>
                     GPA Trend Chart
                 </Typography>
@@ -213,13 +230,12 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
                 </ResponsiveContainer>
             </Paper>
 
-            {/* Export PDF */}
             <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>
                 <Button
                     variant="contained"
                     color="primary"
                     onClick={exportPDF}
-                    sx={{ px: 4, py: 1.5 }}
+                    sx={{ px: { xs: 3, sm: 4 }, py: { xs: 1, sm: 1.5 } }}
                 >
                     Export as PDF
                 </Button>
