@@ -1,94 +1,140 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState } from "react";
 import {
-    Container,
-    Typography,
-    TextField,
-    Button,
     Box,
-    Grid,
+    Button,
+    TextField,
+    Typography,
     Paper,
 } from "@mui/material";
 
-const Calculator: React.FC = () => {
-    const [marks, setMarks] = useState<number[]>([]);
-    const [result, setResult] = useState<string>("");
+interface Course {
+    code: string;
+    units: number;
+    grade: string;
+}
 
-    // ✅ Handles both input and textarea safely
-    const handleAddMark = (
-        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-        index: number
+const gradePoints: Record<string, number> = {
+    A: 5,
+    B: 4,
+    C: 3,
+    D: 2,
+    E: 1,
+    F: 0,
+};
+
+const Calculator: React.FC = () => {
+    const [courses, setCourses] = useState<Course[]>([
+        { code: "", units: 0, grade: "" },
+    ]);
+    const [gpa, setGPA] = useState<number | null>(null);
+
+    const handleCourseChange = (
+        index: number,
+        field: keyof Course,
+        value: string | number
     ) => {
-        const newMarks = [...marks];
-        newMarks[index] = Number(e.target.value);
-        setMarks(newMarks);
+        const newCourses = [...courses];
+        (newCourses[index] as any)[field] = value;
+        setCourses(newCourses);
     };
 
-    const addField = () => {
-        setMarks([...marks, 0]);
+    const addCourse = () => {
+        setCourses([...courses, { code: "", units: 0, grade: "" }]);
     };
 
     const calculateGPA = () => {
-        if (marks.length === 0) {
-            setResult("Please add at least one course.");
+        let totalUnits = 0;
+        let totalPoints = 0;
+
+        for (const course of courses) {
+            const points = gradePoints[course.grade.toUpperCase()] ?? 0;
+            totalUnits += course.units;
+            totalPoints += points * course.units;
+        }
+
+        if (totalUnits === 0) {
+            setGPA(0);
             return;
         }
 
-        const sum = marks.reduce((acc, val) => acc + val, 0);
-        const gpa = sum / marks.length;
-        setResult(`Your GPA is: ${gpa.toFixed(2)}`);
+        const result = totalPoints / totalUnits;
+        setGPA(Number(result.toFixed(2)));
     };
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 5 }}>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-                <Typography variant="h4" gutterBottom>
-                    GPA Calculator
+        <Box sx={{ p: 4 }}>
+            <Typography variant="h4" gutterBottom align="center" color="green">
+                GPA Calculator
+            </Typography>
+
+            {courses.map((course, index) => (
+                <Paper
+                    key={index}
+                    sx={{
+                        p: 2,
+                        mb: 2,
+                        border: "1px solid #ccc",
+                        borderRadius: 2,
+                    }}
+                >
+                    <Box
+                        display="flex"
+                        gap={2}
+                        flexWrap="wrap"
+                        justifyContent="space-between"
+                    >
+                        <Box flex="1 1 30%">
+                            <TextField
+                                label="Course Code"
+                                value={course.code}
+                                onChange={(e) =>
+                                    handleCourseChange(index, "code", e.target.value)
+                                }
+                                fullWidth
+                            />
+                        </Box>
+
+                        <Box flex="1 1 30%">
+                            <TextField
+                                label="Course Units"
+                                type="number"
+                                value={course.units}
+                                onChange={(e) =>
+                                    handleCourseChange(index, "units", Number(e.target.value))
+                                }
+                                fullWidth
+                            />
+                        </Box>
+
+                        <Box flex="1 1 30%">
+                            <TextField
+                                label="Grade"
+                                value={course.grade}
+                                onChange={(e) =>
+                                    handleCourseChange(index, "grade", e.target.value)
+                                }
+                                fullWidth
+                            />
+                        </Box>
+                    </Box>
+                </Paper>
+            ))}
+
+            <Box display="flex" justifyContent="center" gap={2} mt={3}>
+                <Button variant="contained" color="success" onClick={addCourse}>
+                    Add Course
+                </Button>
+                <Button variant="contained" color="primary" onClick={calculateGPA}>
+                    Calculate GPA
+                </Button>
+            </Box>
+
+            {gpa !== null && (
+                <Typography variant="h6" align="center" sx={{ mt: 3 }}>
+                    Your GPA: <strong>{gpa}</strong>
                 </Typography>
-
-                {marks.map((mark, index) => (
-                    <TextField
-                        key={index}
-                        label={`Course ${index + 1} Mark`}
-                        type="number"
-                        value={mark}
-                        onChange={(e) => handleAddMark(e, index)} // ✅ fixed
-                        fullWidth
-                        sx={{ mt: 2 }}
-                    />
-                ))}
-
-                <Box sx={{ mt: 3 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                            <Button
-                                variant="contained"
-                                fullWidth
-                                color="primary"
-                                onClick={addField}
-                            >
-                                Add Course
-                            </Button>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Button
-                                variant="contained"
-                                fullWidth
-                                color="success"
-                                onClick={calculateGPA}
-                            >
-                                Calculate GPA
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Box>
-
-                {result && (
-                    <Typography variant="h6" sx={{ mt: 3 }}>
-                        {result}
-                    </Typography>
-                )}
-            </Paper>
-        </Container>
+            )}
+        </Box>
     );
 };
 
