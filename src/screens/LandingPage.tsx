@@ -1,106 +1,93 @@
 // src/screens/LandingPage.tsx
-import React, { useState, useEffect } from "react";
-import { Box, Typography, Button, Paper, Container } from "@mui/material";
+import React from "react";
+import { Box, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { Typewriter } from "react-simple-typewriter";
 
-const slidingWords = ["Motivate", "Inspire", "Achieve", "Excel", "Succeed"];
-
-const LandingPage: React.FC<{ onStart: () => void }> = ({ onStart }) => {
-    const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [fade, setFade] = useState(true);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setFade(false); // start fade out
-            setTimeout(() => {
-                setCurrentWordIndex((prev) => (prev + 1) % slidingWords.length);
-                setFade(true); // fade in new word
-            }, 500); // match transition duration
-        }, 2500); // change word every 2.5 seconds
-        return () => clearInterval(interval);
-    }, []);
+const LandingPage: React.FC = () => {
+    const navigate = useNavigate();
 
     return (
-        <Container maxWidth="md" sx={{ textAlign: "center", py: 8 }}>
-            {/* Hero Section */}
+        <Box
+            sx={{
+                minHeight: "100vh",
+                background: "linear-gradient(to bottom, #e8f5e9, #ffffff)", // soft green to white
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                p: { xs: 2, md: 4 },
+                textAlign: "center",
+            }}
+        >
+            {/* Main Heading */}
             <Typography
-                variant="h2"
+                variant="h3"
+                sx={{ fontWeight: "bold", color: "#2e7d32", mb: 2 }}
+            >
+                Welcome to GPA & CGPA Calculator
+            </Typography>
+
+            {/* Typewriter Text */}
+            <Typography
+                variant="h5"
+                sx={{ color: "#1b5e20", mb: 4, minHeight: "40px" }}
+            >
+                <Typewriter
+                    words={[
+                        "Track your academic performance effortlessly.",
+                        "Visualize your GPA trends.",
+                        "Plan your semesters smartly.",
+                        "Stay motivated and achieve your best!"
+                    ]}
+                    loop={0}
+                    cursor
+                    cursorStyle="|"
+                    typeSpeed={70}
+                    deleteSpeed={40}
+                    delaySpeed={1500}
+                />
+            </Typography>
+
+            {/* How to Use / Instructions */}
+            <Box
                 sx={{
-                    fontWeight: "bold",
-                    mb: 3,
-                    minWidth: "150px",
-                    display: "inline-block",
+                    maxWidth: 500,
+                    mb: 4,
+                    p: 3,
+                    borderRadius: 2,
+                    backgroundColor: "#f1f8e9",
+                    boxShadow: "0px 4px 15px rgba(0,0,0,0.1)",
                 }}
             >
-                <span
-                    style={{
-                        color: "#ffeb3b",
-                        transition: "opacity 0.5s ease",
-                        opacity: fade ? 1 : 0,
-                        display: "inline-block",
-                    }}
-                >
-                    {slidingWords[currentWordIndex]}
-                </span>{" "}
-                Your GPA Journey
-            </Typography>
-
-            <Typography variant="h6" sx={{ mb: 5, color: "#555" }}>
-                Take control of your academic performance. Track your GPA and CGPA
-                with ease, stay motivated, and reach your academic goals.
-            </Typography>
-
-            <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={onStart}
-                sx={{ mb: 6 }}
-            >
-                Start Calculating
-            </Button>
-
-            {/* How to Use */}
-            <Paper
-                elevation={3}
-                sx={{ p: 4, mb: 6, borderRadius: 2, backgroundColor: "#f5f5f5" }}
-            >
-                <Typography variant="h5" sx={{ mb: 2 }}>
-                    How to Use the App
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    1. Select your grading system (Uganda, USA, India).
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                    1. Select your grading country.
+                    2. Add your academic years and semesters.
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                    2. Add your courses for each semester with marks and units.
+                    3. Enter your courses, marks, and units.
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                    3. Calculate your GPA for each semester.
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                    4. Track your overall CGPA and see your academic performance.
-                </Typography>
-            </Paper>
-
-            {/* Motivation Section */}
-            <Paper
-                elevation={3}
-                sx={{ p: 4, borderRadius: 2, backgroundColor: "#e0f7fa" }}
-            >
-                <Typography variant="h5" sx={{ mb: 2 }}>
-                    Stay Motivated!
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                    Every calculation brings you closer to understanding your academic
-                    strengths and areas to improve.
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                    Keep pushing yourself, track progress, and celebrate small wins.
+                    4. Click “Calculate GPA” to see your semester GPA.
                 </Typography>
                 <Typography variant="body1">
-                    Your success is a journey. Start today and excel tomorrow!
+                    5. View your summary to see your overall CGPA and class.
                 </Typography>
-            </Paper>
-        </Container>
+            </Box>
+
+            {/* Start Button */}
+            <Button
+                variant="contained"
+                color="success"
+                size="large"
+                sx={{ px: 5, py: 1.5, fontSize: "1.2rem" }}
+                onClick={() => navigate("/calculator")}
+            >
+                Start Using App
+            </Button>
+        </Box>
     );
 };
 
