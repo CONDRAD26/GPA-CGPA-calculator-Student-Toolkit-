@@ -1,85 +1,106 @@
 // src/screens/LandingPage.tsx
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Button, Paper } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Box, Typography, Button, Paper, Container } from "@mui/material";
 
-const slidingWords = ["Achieve", "Calculate", "Excel", "Succeed", "Track"];
+const slidingWords = ["Motivate", "Inspire", "Achieve", "Excel", "Succeed"];
 
-const LandingPage: React.FC = () => {
-    const navigate = useNavigate();
+const LandingPage: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
+    const [fade, setFade] = useState(true);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCurrentWordIndex((prev) => (prev + 1) % slidingWords.length);
-        }, 2000); // change word every 2 seconds
+            setFade(false); // start fade out
+            setTimeout(() => {
+                setCurrentWordIndex((prev) => (prev + 1) % slidingWords.length);
+                setFade(true); // fade in new word
+            }, 500); // match transition duration
+        }, 2500); // change word every 2.5 seconds
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <Box
-            sx={{
-                minHeight: "100vh",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                background: "linear-gradient(to right, #6a11cb, #2575fc)",
-                color: "white",
-                px: 2,
-                textAlign: "center",
-            }}
-        >
+        <Container maxWidth="md" sx={{ textAlign: "center", py: 8 }}>
             {/* Hero Section */}
-            <Typography variant="h2" sx={{ fontWeight: "bold", mb: 3 }}>
-                <span style={{ color: "#ffeb3b" }}>{slidingWords[currentWordIndex]}</span> Your GPA Journey
-            </Typography>
-            <Typography variant="h5" sx={{ mb: 4 }}>
-                Track, calculate, and achieve your academic goals effortlessly!
+            <Typography
+                variant="h2"
+                sx={{
+                    fontWeight: "bold",
+                    mb: 3,
+                    minWidth: "150px",
+                    display: "inline-block",
+                }}
+            >
+                <span
+                    style={{
+                        color: "#ffeb3b",
+                        transition: "opacity 0.5s ease",
+                        opacity: fade ? 1 : 0,
+                        display: "inline-block",
+                    }}
+                >
+                    {slidingWords[currentWordIndex]}
+                </span>{" "}
+                Your GPA Journey
             </Typography>
 
-            {/* Call-to-Action */}
+            <Typography variant="h6" sx={{ mb: 5, color: "#555" }}>
+                Take control of your academic performance. Track your GPA and CGPA
+                with ease, stay motivated, and reach your academic goals.
+            </Typography>
+
             <Button
                 variant="contained"
-                color="secondary"
+                color="primary"
                 size="large"
-                sx={{ px: 5, py: 1.5, mb: 6 }}
-                onClick={() => navigate("/calculator")}
+                onClick={onStart}
+                sx={{ mb: 6 }}
             >
                 Start Calculating
             </Button>
 
-            {/* How to Use Section */}
+            {/* How to Use */}
             <Paper
-                elevation={5}
-                sx={{
-                    p: 4,
-                    maxWidth: 600,
-                    borderRadius: 3,
-                    backgroundColor: "rgba(255,255,255,0.9)",
-                    color: "black",
-                }}
+                elevation={3}
+                sx={{ p: 4, mb: 6, borderRadius: 2, backgroundColor: "#f5f5f5" }}
             >
-                <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-                    How to Use This App:
+                <Typography variant="h5" sx={{ mb: 2 }}>
+                    How to Use the App
                 </Typography>
-                <Typography sx={{ mb: 1 }}>
-                    1. Select your country to use the correct grading scale.
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    1. Select your grading country.
                 </Typography>
-                <Typography sx={{ mb: 1 }}>
-                    2. Enter your course codes, marks, and units for each semester.
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    2. Add your courses for each semester with marks and units.
                 </Typography>
-                <Typography sx={{ mb: 1 }}>
-                    3. Click "Calculate GPA" to see your semester GPA.
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    3. Calculate your GPA for each semester.
                 </Typography>
-                <Typography sx={{ mb: 1 }}>
-                    4. Track your CGPA across multiple years effortlessly.
-                </Typography>
-                <Typography sx={{ mt: 2, fontWeight: "bold", color: "#2575fc" }}>
-                    Stay motivated and aim higher each semester!
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    4. Track your overall CGPA and see your academic performance.
                 </Typography>
             </Paper>
-        </Box>
+
+            {/* Motivation Section */}
+            <Paper
+                elevation={3}
+                sx={{ p: 4, borderRadius: 2, backgroundColor: "#e0f7fa" }}
+            >
+                <Typography variant="h5" sx={{ mb: 2 }}>
+                    Stay Motivated!
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    Every calculation brings you closer to understanding your academic
+                    strengths and areas to improve.
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                    Keep pushing yourself, track progress, and celebrate small wins.
+                </Typography>
+                <Typography variant="body1">
+                    Your success is a journey. Start today and excel tomorrow!
+                </Typography>
+            </Paper>
+        </Container>
     );
 };
 
