@@ -9,6 +9,7 @@ import {
     TableHead,
     TableRow,
     Button,
+    Divider,
 } from "@mui/material";
 import {
     LineChart,
@@ -54,6 +55,7 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
         let startY = 20;
 
         academicYears.forEach((year) => {
+            doc.setFontSize(14);
             doc.text(year.name, 14, startY - 5);
 
             const tableData: (string | number)[][] = [];
@@ -69,17 +71,17 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
                 body: tableData,
                 startY,
                 theme: "grid",
-                headStyles: { fillColor: [34, 139, 34] },
+                headStyles: { fillColor: [34, 139, 34], textColor: 255 },
             });
 
             startY = (doc as any).lastAutoTable.finalY + 10;
         });
 
+        doc.setFontSize(12);
         doc.text(`Overall CGPA: ${overallCGPA ?? "N/A"}`, 14, startY + 5);
         doc.text(`Class: ${getClass(overallCGPA)}`, 14, startY + 12);
         doc.save("Academic_Summary.pdf");
     };
-
 
     // Custom dot for GPA trend chart
     const renderDot = (props: any) => {
@@ -100,36 +102,65 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
     };
 
     return (
-        <Box sx={{ p: 4 }}>
-            <Typography variant="h4" align="center" gutterBottom>
+        <Box sx={{ p: 4, backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+            <Typography variant="h4" align="center" gutterBottom color="primary">
                 Academic Summary
             </Typography>
 
+            <Divider sx={{ mb: 3 }} />
+
             {/* Semester Tables */}
             {academicYears.map((year, yearIndex) => (
-                <Paper key={yearIndex} sx={{ p: 3, mb: 4 }}>
+                <Paper
+                    key={yearIndex}
+                    sx={{
+                        p: 3,
+                        mb: 4,
+                        borderRadius: 3,
+                        boxShadow: 3,
+                        backgroundColor: "#ffffff",
+                    }}
+                >
                     <Typography variant="h5" color="secondary" gutterBottom>
                         {year.name}
                     </Typography>
-                    <Table>
-                        <TableHead>
+
+                    <Table sx={{ mt: 2 }}>
+                        <TableHead sx={{ backgroundColor: "#228B22" }}>
                             <TableRow>
-                                <TableCell>Semester</TableCell>
-                                <TableCell>Courses</TableCell>
-                                <TableCell>Grades</TableCell>
-                                <TableCell>GPA</TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                                    Semester
+                                </TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                                    Courses
+                                </TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                                    Grades
+                                </TableCell>
+                                <TableCell sx={{ color: "white", fontWeight: "bold" }}>
+                                    GPA
+                                </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {year.semesters.map((sem, i) => (
                                 <TableRow
                                     key={i}
-                                    sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}
+                                    sx={{
+                                        "&:hover": { backgroundColor: "#e0f2f1" },
+                                        color: (sem.gpa ?? 0) < 2 ? "red" : "inherit",
+                                    }}
                                 >
                                     <TableCell>{sem.name}</TableCell>
-                                    <TableCell>{sem.courses.map((c) => c.code).join(", ")}</TableCell>
-                                    <TableCell>{sem.courses.map((c) => c.grade).join(", ")}</TableCell>
-                                    <TableCell sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}>
+                                    <TableCell>
+                                        {sem.courses.map((c) => c.code).join(", ")}
+                                    </TableCell>
+                                    <TableCell>
+                                        {sem.courses.map((c) => c.grade).join(", ")}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}
+                                    >
                                         {sem.gpa ?? "N/A"}
                                     </TableCell>
                                 </TableRow>
@@ -140,15 +171,25 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
             ))}
 
             {/* Overall CGPA and Class */}
-            <Typography variant="h5" align="center" sx={{ mt: 3 }} color="green">
-                Overall CGPA: <strong>{overallCGPA ?? "N/A"}</strong>
-            </Typography>
-            <Typography variant="h6" align="center" sx={{ mb: 2 }}>
-                Class: <strong>{getClass(overallCGPA)}</strong>
-            </Typography>
+            <Paper
+                sx={{
+                    p: 3,
+                    mb: 4,
+                    borderRadius: 3,
+                    backgroundColor: "#e8f5e9",
+                    textAlign: "center",
+                }}
+            >
+                <Typography variant="h5" color="green">
+                    Overall CGPA: <strong>{overallCGPA ?? "N/A"}</strong>
+                </Typography>
+                <Typography variant="h6" sx={{ mt: 1 }}>
+                    Class: <strong>{getClass(overallCGPA)}</strong>
+                </Typography>
+            </Paper>
 
             {/* GPA Trend Chart */}
-            <Paper sx={{ p: 3, mt: 4 }}>
+            <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, backgroundColor: "#ffffff" }}>
                 <Typography variant="h6" gutterBottom>
                     GPA Trend Chart
                 </Typography>
@@ -174,7 +215,12 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
 
             {/* Export PDF */}
             <Box display="flex" justifyContent="center" sx={{ mt: 3 }}>
-                <Button variant="contained" color="primary" onClick={exportPDF}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={exportPDF}
+                    sx={{ px: 4, py: 1.5 }}
+                >
                     Export as PDF
                 </Button>
             </Box>
