@@ -34,6 +34,7 @@ interface SummaryProps {
 
 const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
     const [expandedYear, setExpandedYear] = useState<number | false>(false);
+    const [expandedSemester, setExpandedSemester] = useState<{ [key: number]: number | false }>({});
 
     const chartData = academicYears.flatMap((year) =>
         year.semesters.map((sem) => ({
@@ -52,11 +53,15 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
         return "Fail";
     };
 
-    const handleAccordionChange = (yearIndex: number) => (
-        _: React.SyntheticEvent,
-        isExpanded: boolean
-    ) => {
+    const handleYearAccordion = (yearIndex: number) => (_: React.SyntheticEvent, isExpanded: boolean) => {
         setExpandedYear(isExpanded ? yearIndex : false);
+    };
+
+    const handleSemesterAccordion = (yearIndex: number, semIndex: number) => (_: React.SyntheticEvent, isExpanded: boolean) => {
+        setExpandedSemester((prev) => ({
+            ...prev,
+            [yearIndex]: isExpanded ? semIndex : false,
+        }));
     };
 
     const exportPDF = () => {
@@ -125,7 +130,7 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
                 <Accordion
                     key={yearIndex}
                     expanded={expandedYear === yearIndex}
-                    onChange={handleAccordionChange(yearIndex)}
+                    onChange={handleYearAccordion(yearIndex)}
                     sx={{ mb: 2, borderRadius: 2, boxShadow: 2 }}
                 >
                     <AccordionSummary
@@ -137,45 +142,52 @@ const Summary: React.FC<SummaryProps> = ({ academicYears, overallCGPA }) => {
 
                     <AccordionDetails>
                         {year.semesters.map((sem, semIndex) => (
-                            <Paper
+                            <Accordion
                                 key={semIndex}
-                                sx={{
-                                    p: { xs: 1, sm: 2 },
-                                    mb: 2,
-                                    borderRadius: 2,
-                                    boxShadow: 1,
-                                    overflowX: "auto",
-                                }}
+                                expanded={expandedSemester[yearIndex] === semIndex}
+                                onChange={handleSemesterAccordion(yearIndex, semIndex)}
+                                sx={{ mb: 1 }}
                             >
-                                <Typography variant="subtitle1" color="secondary" gutterBottom>
-                                    {sem.name}
-                                </Typography>
-                                <Table sx={{ minWidth: 400 }}>
-                                    <TableHead sx={{ backgroundColor: "#228B22" }}>
-                                        <TableRow>
-                                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Course</TableCell>
-                                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>Grade</TableCell>
-                                            <TableCell sx={{ color: "white", fontWeight: "bold" }}>GPA</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {sem.courses.map((course, i) => (
-                                            <TableRow
-                                                key={i}
-                                                sx={{
-                                                    "&:hover": { backgroundColor: "#e0f2f1" },
-                                                }}
-                                            >
-                                                <TableCell>{course.code}</TableCell>
-                                                <TableCell>{course.grade}</TableCell>
-                                                <TableCell sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}>
-                                                    {sem.gpa ?? "N/A"}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </Paper>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography variant="subtitle1">{sem.name}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Paper
+                                        sx={{
+                                            p: { xs: 1, sm: 2 },
+                                            borderRadius: 2,
+                                            boxShadow: 1,
+                                            overflowX: "auto",
+                                        }}
+                                    >
+                                        <Table sx={{ minWidth: 350 }}>
+                                            <TableHead sx={{ backgroundColor: "#228B22" }}>
+                                                <TableRow>
+                                                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Course</TableCell>
+                                                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Grade</TableCell>
+                                                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>GPA</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {sem.courses.map((course, i) => (
+                                                    <TableRow
+                                                        key={i}
+                                                        sx={{
+                                                            "&:hover": { backgroundColor: "#e0f2f1" },
+                                                        }}
+                                                    >
+                                                        <TableCell>{course.code}</TableCell>
+                                                        <TableCell>{course.grade}</TableCell>
+                                                        <TableCell sx={{ color: (sem.gpa ?? 0) < 2 ? "red" : "inherit" }}>
+                                                            {sem.gpa ?? "N/A"}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </Paper>
+                                </AccordionDetails>
+                            </Accordion>
                         ))}
                     </AccordionDetails>
                 </Accordion>
