@@ -16,7 +16,7 @@ import {
     AccordionSummary,
     AccordionDetails,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Summary from "./Summary";
 
 export interface Course {
@@ -179,7 +179,7 @@ const Calculator: React.FC = () => {
     if (showSummary) return <Summary academicYears={academicYears} overallCGPA={overallCGPA} />;
 
     return (
-        <Box sx={{ p: { xs: 2, sm: 4 } }}>
+        <Box sx={{ p: { xs: 2, md: 4 } }}>
             <Typography variant="h4" align="center" color="green" gutterBottom>
                 GPA & CGPA Calculator
             </Typography>
@@ -198,96 +198,123 @@ const Calculator: React.FC = () => {
                 const progress = (completedSemesters / year.semesters.length) * 100;
 
                 return (
-                    <Accordion key={yearIndex} defaultExpanded>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant="h6">{year.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <LinearProgress variant="determinate" value={progress} sx={{ mb: 2, height: 10, borderRadius: 5 }} />
-                            {year.semesters.map((semester, semIndex) => {
-                                const isActive = semIndex === year.currentSemesterIndex;
-                                return (
-                                    <Accordion key={semIndex} sx={{ mb: 2 }} defaultExpanded={isActive}>
-                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                            <Typography variant="subtitle1" color={isActive ? "primary" : "textSecondary"}>
-                                                {semester.name} {semester.completed && `- GPA: ${semester.gpa}`}
-                                            </Typography>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
-                                            {semester.courses.map((course, courseIndex) => (
-                                                <Box
-                                                    key={courseIndex}
-                                                    display="flex"
-                                                    gap={2}
-                                                    flexWrap="wrap"
-                                                    justifyContent="space-between"
-                                                    sx={{ mb: 2, borderBottom: "1px dashed #ccc", pb: 1 }}
-                                                >
-                                                    <TextField
-                                                        label="Course Code"
-                                                        value={course.code}
-                                                        onChange={(e) =>
-                                                            handleCourseChange(yearIndex, semIndex, courseIndex, "code", e.target.value)
-                                                        }
-                                                        sx={{ flex: "1 1 45%", minWidth: 120 }}
-                                                    />
-                                                    <TextField
-                                                        label="Marks"
-                                                        type="number"
-                                                        value={course.marks}
-                                                        onChange={(e) =>
-                                                            handleCourseChange(yearIndex, semIndex, courseIndex, "marks", Number(e.target.value))
-                                                        }
-                                                        sx={{ flex: "1 1 45%", minWidth: 120 }}
-                                                    />
-                                                    <TextField
-                                                        label="Units"
-                                                        type="number"
-                                                        value={course.units}
-                                                        onChange={(e) =>
-                                                            handleCourseChange(yearIndex, semIndex, courseIndex, "units", Number(e.target.value))
-                                                        }
-                                                        sx={{ flex: "1 1 45%", minWidth: 120 }}
-                                                    />
-                                                    <TextField
-                                                        label="Grade"
-                                                        value={course.grade}
-                                                        InputProps={{ readOnly: true }}
-                                                        sx={{ flex: "1 1 45%", minWidth: 120 }}
-                                                    />
-                                                </Box>
-                                            ))}
+                    <Box key={yearIndex} sx={{ mb: 5 }}>
+                        <Typography variant="h5" color="secondary" gutterBottom>{year.name}</Typography>
+                        <LinearProgress variant="determinate" value={progress} sx={{ mb: 2, height: 10, borderRadius: 5 }} />
 
-                                            <Box display="flex" flexWrap="wrap" justifyContent="center" gap={2} mt={2}>
-                                                <Button variant="contained" color="success" onClick={() => addCourse(yearIndex, semIndex)}>
-                                                    Add Course
-                                                </Button>
-                                                <Button variant="contained" color="primary" onClick={() => calculateGPA(yearIndex, semIndex)}>
-                                                    Calculate GPA
-                                                </Button>
-                                                {isActive && semester.completed && (
-                                                    <Button variant="outlined" color="secondary" onClick={() => nextSemester(yearIndex)}>
-                                                        Next Semester
-                                                    </Button>
-                                                )}
+                        {year.semesters.map((semester, semIndex) => {
+                            const isActive = semIndex === year.currentSemesterIndex;
+
+                            return (
+                                <Accordion key={semIndex} defaultExpanded={isActive} sx={{ mb: 2 }}>
+                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                        <Typography variant="subtitle1" color={isActive ? "primary" : "textSecondary"}>
+                                            {semester.name} {semester.completed && `- GPA: ${semester.gpa}`}
+                                        </Typography>
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        {semester.completed ? (
+                                            // Show list after calculation
+                                            <Box>
+                                                {semester.courses.map((course, i) => (
+                                                    <Box
+                                                        key={i}
+                                                        display="flex"
+                                                        justifyContent="space-between"
+                                                        sx={{
+                                                            mb: 1,
+                                                            p: 1,
+                                                            border: "1px solid #ccc",
+                                                            borderRadius: 1,
+                                                            backgroundColor: "#f9f9f9",
+                                                        }}
+                                                    >
+                                                        <Typography sx={{ flex: 1 }}>{course.code}</Typography>
+                                                        <Typography sx={{ flex: 1 }}>{course.marks}</Typography>
+                                                        <Typography sx={{ flex: 1 }}>{course.units}</Typography>
+                                                        <Typography sx={{ flex: 1, color: gpaColor(semester.gpa || 0, country) }}>
+                                                            {course.grade}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
                                             </Box>
-                                        </AccordionDetails>
-                                    </Accordion>
-                                );
-                            })}
-                        </AccordionDetails>
-                    </Accordion>
+                                        ) : (
+                                            // Input form
+                                            <Box>
+                                                {semester.courses.map((course, courseIndex) => (
+                                                    <Box
+                                                        key={courseIndex}
+                                                        display="flex"
+                                                        gap={2}
+                                                        flexWrap="wrap"
+                                                        justifyContent="space-between"
+                                                        sx={{ mb: 2, borderBottom: "1px dashed #ccc", pb: 1 }}
+                                                    >
+                                                        <TextField
+                                                            label="Course Code"
+                                                            value={course.code}
+                                                            onChange={(e) =>
+                                                                handleCourseChange(yearIndex, semIndex, courseIndex, "code", e.target.value)
+                                                            }
+                                                            sx={{ flex: "1 1 45%", minWidth: 120 }}
+                                                        />
+                                                        <TextField
+                                                            label="Marks"
+                                                            type="number"
+                                                            value={course.marks}
+                                                            onChange={(e) =>
+                                                                handleCourseChange(yearIndex, semIndex, courseIndex, "marks", Number(e.target.value))
+                                                            }
+                                                            sx={{ flex: "1 1 45%", minWidth: 120 }}
+                                                        />
+                                                        <TextField
+                                                            label="Units"
+                                                            type="number"
+                                                            value={course.units}
+                                                            onChange={(e) =>
+                                                                handleCourseChange(yearIndex, semIndex, courseIndex, "units", Number(e.target.value))
+                                                            }
+                                                            sx={{ flex: "1 1 45%", minWidth: 120 }}
+                                                        />
+                                                        <TextField
+                                                            label="Grade"
+                                                            value={course.grade}
+                                                            InputProps={{ readOnly: true }}
+                                                            sx={{ flex: "1 1 45%", minWidth: 120 }}
+                                                        />
+                                                    </Box>
+                                                ))}
+
+                                                <Box display="flex" flexWrap="wrap" justifyContent="center" gap={2} mt={2}>
+                                                    <Button variant="contained" color="success" onClick={() => addCourse(yearIndex, semIndex)}>
+                                                        Add Course
+                                                    </Button>
+                                                    <Button variant="contained" color="primary" onClick={() => calculateGPA(yearIndex, semIndex)}>
+                                                        Calculate GPA
+                                                    </Button>
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {isActive && semester.completed && (
+                                            <Box display="flex" justifyContent="center" mt={2}>
+                                                <Button variant="outlined" color="secondary" onClick={() => nextSemester(yearIndex)}>
+                                                    Next Semester
+                                                </Button>
+                                            </Box>
+                                        )}
+                                    </AccordionDetails>
+                                </Accordion>
+                            );
+                        })}
+                    </Box>
                 );
             })}
 
             <Divider sx={{ my: 3 }} />
-            <Box display="flex" flexWrap="wrap" justifyContent="center" gap={2} mb={3}>
-                <Button variant="outlined" color="success" onClick={addAcademicYear}>
-                    Add Academic Year
-                </Button>
-                <Button variant="contained" color="secondary" onClick={() => setShowSummary(true)}>
-                    View Summary
-                </Button>
+            <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap" mb={3}>
+                <Button variant="outlined" color="success" onClick={addAcademicYear}>Add Academic Year</Button>
+                <Button variant="contained" color="secondary" onClick={() => setShowSummary(true)}>View Summary</Button>
             </Box>
 
             {overallCGPA !== null && (
